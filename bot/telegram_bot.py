@@ -181,7 +181,7 @@ class ChatGPTTelegramBot:
         with open('accounts.json', 'r') as file:
             accounts = json.load(file)
 
-        user_id = self.get_user_id_by_username()
+        user_id = self.get_user_id_by_username(update, context)
 
         if user_id in accounts['ALLOWED_TELEGRAM_USER_IDS']:
             await context.bot.send_message(chat_id=chat_id, text='Пользователь уже добавлен')
