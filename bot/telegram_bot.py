@@ -173,25 +173,24 @@ class ChatGPTTelegramBot:
             return
 
         if message_text(update.message) == '':
-            await context.bot.send_message(chat_id=chat_id, text='Введите имя пользователя')
+            await context.bot.send_message(chat_id=chat_id, text='Введите ID пользователя')
             logging.warning(f'Администратор {update.message.from_user.name} (id: {update.message.from_user.id}) '
-                            f'не ввел имя пользователя')
+                            f'не ввел ID пользователя')
             return
 
         with open('accounts.json', 'r') as file:
             accounts = json.load(file)
 
-        user_id = self.get_user_id_by_username()
-
-        if user_id in accounts['ALLOWED_TELEGRAM_USER_IDS']:
+        if message_text(update.message) in accounts['ALLOWED_TELEGRAM_USER_IDS']:
             await context.bot.send_message(chat_id=chat_id, text='Пользователь уже добавлен')
             logging.warning(f'Администратор {update.message.from_user.name} (id: {update.message.from_user.id}) '
                             f'пытается добавить уже добавленного пользователя')
             return
 
-        accounts['ALLOWED_TELEGRAM_USER_IDS'].append(user_id)
+        accounts['ALLOWED_TELEGRAM_USER_IDS'].append(
+            message_text(update.message))
 
-        self.config['allowed_user_ids'].append(user_id)
+        self.config['allowed_user_ids'].append(message_text(update.message))
 
         with open('accounts.json', 'w') as file:
             json.dump(accounts, file, ensure_ascii=False, indent=4)
@@ -324,12 +323,6 @@ class ChatGPTTelegramBot:
         reset_content = message_text(update.message)
         self.openai.reset_chat_history(chat_id=chat_id, content=reset_content)
         await context.bot.send_message(chat_id=chat_id, text='Done!')
-
-    def get_user_id_by_username(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-        chat_id = context.bot.get_chat(
-            "@{}".format(message_text(update.message))).id
-        return chat_id
 
     async def image(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
